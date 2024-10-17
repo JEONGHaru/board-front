@@ -11,7 +11,7 @@ interface Props {
 //          component: Top 3 List Item component          //
 export default function Top3Item({ top3ListItem }:Props) {
     
-  //          properties          //
+  //         state: properties          //
   const { boardNumber, title, content, boardTitleImage } = top3ListItem
   const { favoriteCount, commentCount, viewCount } = top3ListItem
   const { writeDatetime, writerNickname, writerProfileImage } = top3ListItem
