@@ -1,9 +1,9 @@
 import React, { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import './style.css';
-import { useNavigate, useParams } from 'react-router-dom';
-import { AUTH_PATH, MAIN_PATH, SEARCH_PATH, USER_PATH } from 'constant';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { AUTH_PATH, BOARD_DETAIL_PATH, BOARD_PATH, BOARD_UPDATE_PATH, BOARD_WRITE_PATH, MAIN_PATH, SEARCH_PATH, USER_PATH } from 'constant';
 import { useCookies } from 'react-cookie';
-import { useLoginUserStore } from 'stores';
+import { useBoardStore, useLoginUserStore } from 'stores';
 
 
 //          component: Header Layout          //
@@ -13,11 +13,22 @@ export default function Header() {
   //          state: Login User State          //
   const {loginUser, setLoginUser, resetLoginUser} =useLoginUserStore();
   
+  //          state: Path State          //
+  const { pathname } = useLocation();
+  
   //          state: Cookie State          //
   const [cookie, setCookie] = useCookies();
   
   //          state: Login State          //
   const [isLogin, setLogin] = useState<boolean>(false);
+  
+  const isAuthPage = pathname.startsWith(AUTH_PATH());
+  const isMainPage = pathname === MAIN_PATH();
+  const isSearchPage = pathname.startsWith(SEARCH_PATH(''));
+  const isBoardDetailPage = pathname.startsWith(BOARD_PATH() + '/' + BOARD_DETAIL_PATH(''));
+  const isBoardWritePage = pathname.startsWith(BOARD_PATH() + '/' + BOARD_WRITE_PATH());
+  const isBoardUpdatePage = pathname.startsWith(BOARD_PATH() + '/' + BOARD_UPDATE_PATH(''));
+  const isUserPage = pathname.startsWith(USER_PATH(''));
   
   
   //          function: navigate function          //
@@ -98,10 +109,10 @@ export default function Header() {
   };
   
   
-  //          component: Login & My Page component          //
+  //          component: My Page component          //
   const MyPageButton = () => {
     
-    //          state: UserEmail Path Varialbe state          //
+    //          state: UserEmail Path Varialbe State          //
     const { userEmail } = useParams();
     
     
@@ -130,10 +141,32 @@ export default function Header() {
     
     if (isLogin) 
     //          render: Mypage Button Component Rendering         //
-    return <div className='white-button' onClick={onMyPageButtonClickHandler}>{'MyPage'}</div>; 
+    return <div className='white-button' onClick={onMyPageButtonClickHandler}>{'MyPage'}</div>;
+     
     //          render: Login Button Component Rendering         //
     return <div className='black-button' onClick={onSignInButtonClickHandler}>{'로그인'}</div>;
+  };
+  
+  //          component: Upload Button component          //
+  const UploadButton = () => {
+    
+    //          state: Board State          //
+    const { title, content, boardImageFileList, resetBoard } = useBoardStore();
+    
+    //          event handler: Upload Button Click Event         //
+    const onUploadButtonClickHandler = () => {
+      
+    }
+    
+    
+    if (title && content)
+    //          render: Upload Button Component Rendering         //
+    return <div className='black-button' onClick={onUploadButtonClickHandler}>{'업로드'}</div>; 
+    
+    //          render: Upload Disable Button Component Rendering         //
+    return <div className='disable-button'>{'업로드'}</div>;
   }
+ 
   
   //          render: Header Layout Rendering         //
   return (
@@ -146,8 +179,10 @@ export default function Header() {
           <div className='header-logo'>{'NK IDOL'}</div>
         </div>
         <div className='header-right-box'>
-          <SearchButton />
-          <MyPageButton />
+          {(isAuthPage || isMainPage || isSearchPage || isBoardDetailPage) && <SearchButton />}
+          {(isMainPage || isBoardDetailPage || isSearchPage || isUserPage) && <MyPageButton />}
+          {(isBoardWritePage || isBoardUpdatePage) && <UploadButton />}
+          
         </div>
       </div>
     </div>
