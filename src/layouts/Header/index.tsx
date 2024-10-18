@@ -1,26 +1,41 @@
 import React, { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import './style.css';
 import { useNavigate, useParams } from 'react-router-dom';
-import { MAIN_PATH, SEARCH_PATH } from 'constant';
+import { AUTH_PATH, MAIN_PATH, SEARCH_PATH, USER_PATH } from 'constant';
+import { useCookies } from 'react-cookie';
+import { useLoginUserStore } from 'stores';
 
 
 //          component: Header Layout          //
 export default function Header() {
   
+  
+  //          state: Login User State          //
+  const {loginUser, setLoginUser, resetLoginUser} =useLoginUserStore();
+  
+  //          state: Cookie State          //
+  const [cookie, setCookie] = useCookies();
+  
+  //          state: Login State          //
+  const [isLogin, setLogin] = useState<boolean>(false);
+  
+  
   //          function: navigate function          //
   const navigate = useNavigate();
+  
   
   //          event handler: Logo Click Event          //
   const onLogoClickHandler = () => {
     navigate(MAIN_PATH());
   }
   
+  
   //          component: Search Button component          //
   const SearchButton = () => {
     
+    
     //          state: Search Button input State          //
     const searchButtonRef = useRef<HTMLDivElement | null>(null);
-    
     
     //          state: Search Button State          //
     const [status, setStatus] = useState<boolean>(false);
@@ -30,6 +45,7 @@ export default function Header() {
     
     //          state: Search State          //
     const { searchWord } = useParams();
+    
     
     //          event handler: Search Change Event          //
     const onSearchWordChangeHandler = (event:ChangeEvent<HTMLInputElement>) => {
@@ -44,7 +60,6 @@ export default function Header() {
       searchButtonRef.current.click();
     };
     
-    
     //          event handler: Search Icon Click Event          //
     const onSearchButtonClickHandler = () => {
       if (!status){
@@ -54,6 +69,7 @@ export default function Header() {
       navigate(SEARCH_PATH(Word));
     };
     
+    
     //          effect: Search Path Value Change Event           //
     useEffect(() => {
       if (searchWord) {
@@ -61,7 +77,6 @@ export default function Header() {
         setStatus(true);
       }
     },[searchWord]);
-    
     
     if (!status)
     //          render: Search Button Rendering (false)         //
@@ -80,8 +95,45 @@ export default function Header() {
         </div>
       </div>
     );
-  }
+  };
   
+  
+  //          component: Login & My Page component          //
+  const MyPageButton = () => {
+    
+    //          state: UserEmail Path Varialbe state          //
+    const { userEmail } = useParams();
+    
+    
+    //          event handler: Mypage Button Click Event         //
+    const onMyPageButtonClickHandler = () =>{
+      
+      if(!loginUser) return;
+      const { email } = loginUser;
+      navigate(USER_PATH(email));
+    };
+    
+    //          event handler: Mypage Button Click Event         //
+    const onSignOutButtonClickHandler = () =>{
+      resetLoginUser();
+      navigate(MAIN_PATH());
+    };
+    
+    //          event handler: Login Button Click Event         //
+    const onSignInButtonClickHandler = () =>{
+      navigate(AUTH_PATH());
+    };
+    
+    if (isLogin && userEmail === loginUser?.email)
+    //          render: Logout Button Component Rendering         //
+    return <div className='white-button' onClick={onMyPageButtonClickHandler}>{'로그아웃'}</div>;
+    
+    if (isLogin) 
+    //          render: Mypage Button Component Rendering         //
+    return <div className='white-button' onClick={onMyPageButtonClickHandler}>{'MyPage'}</div>; 
+    //          render: Login Button Component Rendering         //
+    return <div className='black-button' onClick={onSignInButtonClickHandler}>{'로그인'}</div>;
+  }
   
   //          render: Header Layout Rendering         //
   return (
@@ -95,6 +147,7 @@ export default function Header() {
         </div>
         <div className='header-right-box'>
           <SearchButton />
+          <MyPageButton />
         </div>
       </div>
     </div>
