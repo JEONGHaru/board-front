@@ -10,6 +10,7 @@ import BoardWrite from 'views/Board/Write';
 import BoardUpdate from 'views/Board/Update';
 import Container from 'layouts/Container';
 import { AUTH_PATH, BOARD_DETAIL_PATH, BOARD_PATH, BOARD_UPDATE_PATH, BOARD_WRITE_PATH, MAIN_PATH, SEARCH_PATH, USER_PATH } from 'constant';
+import AddressT from 'views/Test';
 
 //          component: Application Component          //
 function App() {
@@ -26,6 +27,7 @@ function App() {
     <Routes>
         <Route element={<Container />}>
             <Route path={MAIN_PATH()} element={<Main />}></Route>
+            <Route path='/test' element={<AddressT />}></Route>
             <Route path={AUTH_PATH()} element={<Authentication />}></Route>
             <Route path={SEARCH_PATH(':searchWord')} element={<Search />}></Route>
             <Route path={USER_PATH('userEmail')} element={<User />}></Route>
