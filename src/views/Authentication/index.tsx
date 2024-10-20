@@ -1,9 +1,9 @@
-import React, { ChangeEvent, KeyboardEvent, useRef, useState } from 'react';
+import React, { ChangeEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import './style.css';
 import InputBox from 'components/InputBox';
-import { SignInRequestDto } from 'apis/request/auth';
-import { signInRequest } from 'apis';
-import { SignInResponseDto } from 'apis/response/auth';
+import { SignInRequestDto, SignUpRequestDto } from 'apis/request/auth';
+import { signInRequest, signUpRequest } from 'apis';
+import { SignInResponseDto, SignUpResponseDto } from 'apis/response/auth';
 import { ResponseDto } from 'apis/response';
 import { useCookies } from 'react-cookie';
 import { MAIN_PATH } from 'constant';
@@ -168,7 +168,7 @@ export default function Authentication() {
     
     
     //          state: Page Number State         //
-    const [page,setPage] = useState< 1 | 2 >(2);
+    const [page,setPage] = useState< 1 | 2 >(1);
     
     //          state: Email State         //
     const [email, setEmail] = useState<string>('');
@@ -235,6 +235,33 @@ export default function Authentication() {
     
     //          function: Address Search PopUp         //
     const open = useDaumPostcodePopup();
+    //          function: Sign Up Response Function         //
+    const signUpResponse = (responseBody: SignUpResponseDto | ResponseDto | null) => {
+      if (!responseBody){
+        alert('네트워크 이상입니다.');
+        return;
+      }
+      
+      const { code } = responseBody;
+      if (code === 'DE'){
+        setEmailError(true);
+        setEmailErrorMessage('중복되는 이메일 주소입니다.');
+      }
+      if (code === 'DN'){
+        setNicknameError(true);
+        setNicknameErrorMessage('중복되는 닉네임입니다.');
+      }
+      if (code === 'DT'){
+        setTelNumberError(true);
+        setTelNumberErrorMessage('중복되는 핸드폰번호입니다.');
+      }
+      if (code === 'VF') alert('모든 값을 입력하세요.');
+      if (code === 'DBE') alert('데이터베이스 오류입니다.');
+      
+      if (code !== 'SU') return;
+      
+      setView('sign-in');
+    }
     
     //          event handler: Email Change Event         //
     const onEmailChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
@@ -350,7 +377,58 @@ export default function Authentication() {
     
     //          event handler: Sign Up Button Click Event          //
     const onSignUpButtonClickHandler = () => {
-      alert('회원가입 버튼!');
+      console.log('작동')
+      const emailPattern = /^[a-zA-Z0-9]*@([-.]?[a-zA-Z0-9])*\.[a-zA-Z]{2,4}$/;
+      const isEmailPattern = emailPattern.test(email);
+      if (!isEmailPattern){
+        setEmailError(true);
+        setEmailErrorMessage('Email을 압력해주세요.')
+      }
+      const isCheckedPassword = password.trim().length >= 8;
+      if (!isCheckedPassword){
+        setPasswordError(true);
+        setPasswordErrorMessage('비밀번호는 8글자 이상 입력해주세요.')
+      }
+      
+      const isEqualPassword = password == passwordCheck;
+      if (!isEqualPassword){
+        setPasswordCheckError(true);
+        setPasswordCheckErrorMessage('비밀번호가 일치하지 않습니다.')
+      }
+      
+      if (!isEmailPattern || !isCheckedPassword || !isEqualPassword) {
+        setPage(1);
+        return;
+      }
+      
+      const hasNickname = nickname.trim().length > 0;
+      if (!hasNickname){
+        setNicknameError(true);
+        setNicknameErrorMessage('닉네임을 입력해주세요.');
+      }
+      
+      const telNumberPattern = /^[0-9]{11,13}$/;
+      const isTelNumberPattern = telNumberPattern.test(telNumber);
+      if (!isTelNumberPattern){
+        setTelNumberError(true);
+        setTelNumberErrorMessage('숫자만 입력해주세요');
+      }
+      
+      const hasAddress = address.trim().length > 0;
+      if (!hasAddress){
+        setAddressError(true);
+        setAddressErrorMessage('주소를 입력해주세요.');
+      }
+      
+      if(!agreedPersonal) setAgreedPersonalError(true);
+      
+      if (!hasNickname || !isTelNumberPattern || !hasAddress || !agreedPersonal ) return;
+      
+      const requestBody: SignUpRequestDto = {
+        email,password,nickname,telNumber,address,addressDetail,agreedPersonal
+      };
+      
+      signUpRequest(requestBody).then(signUpResponse);
     }
     
     //          event handler: Sign In Link Click Event          //
@@ -375,10 +453,9 @@ export default function Authentication() {
     //          event handler: Password Check Key Down Event          //
     const onPasswordCheckKeyDownHandler = (event:KeyboardEvent<HTMLInputElement>) => {
       if (event.key !== 'Enter') return;
-      if (!nickNameRef.current) return;
       onNextButtonClickHandler();
-      nickNameRef.current.focus();
     }
+    
     
     //          event handler: Nickname Key Down Event          //
     const onNicknameKeyDownHandler = (event:KeyboardEvent<HTMLInputElement>) => {
@@ -407,9 +484,20 @@ export default function Authentication() {
     const onComplete = (data: Address) => {
       const { address } = data;
       setAddress(address);
+      setAddressError(false);
+      setAddressErrorMessage('');
       if (!addressDetailRef.current) return;
       addressDetailRef.current.focus();
     }
+    
+    
+    //          effect: Page Change Effect          //
+    useEffect(() => {
+      if (page === 2) {
+        if (!nickNameRef.current) return;
+        nickNameRef.current.focus();
+      }
+    }, [page])
     
     //          render: Authentication Component rendering         //
     return(
