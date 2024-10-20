@@ -1,4 +1,4 @@
-import { ChangeEvent, Dispatch, KeyboardEvent, SetStateAction, forwardRef } from 'react'
+import { ChangeEvent, KeyboardEvent, forwardRef } from 'react'
 import './style.css';
 
 
@@ -8,7 +8,7 @@ interface Props {
     type: 'text' | 'password';
     placeholder: string;
     value: string;
-    setValue: Dispatch<SetStateAction<string>>;
+    onChange: (event: ChangeEvent<HTMLInputElement>) => void;
     error: boolean;
     
     icon?: 'eye-light-off-icon' | 'eye-light-on-icon' | 'expand-right-light-icon';
@@ -26,13 +26,8 @@ const InputBox = forwardRef<HTMLInputElement, Props>((props: Props, ref) => {
     
     //          state: Properties          //
     const { label, type, placeholder, value, error, icon, message } = props;
-    const { setValue, onButtonClick, onKeyDown, onButtonUp, onButtonDown } = props
-    
-    //          event handler: Input Set Value Event Function          //
-    const onChangeHandler = (event: ChangeEvent<HTMLInputElement>) => {
-        const { value } = event.target
-        setValue(value);
-    }
+    const { onChange, onButtonClick, onKeyDown, onButtonUp, onButtonDown } = props
+
     
     //          event handler: Input Key Event Function          //
     const onKeyDownHandler = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -45,7 +40,7 @@ const InputBox = forwardRef<HTMLInputElement, Props>((props: Props, ref) => {
         <div className='inputbox'>
             <div className='inputbox-label'>{label}</div>
             <div className={error ? 'inputbox-container-error' : 'inputbox-container'}>
-                <input ref={ref} type={type} className='input' placeholder={placeholder} value={value} onChange={onChangeHandler} onKeyDown={onKeyDownHandler}/>
+                <input ref={ref} type={type} className='input' placeholder={placeholder} value={value} onChange={onChange} onKeyDown={onKeyDownHandler}/>
                 {(onButtonClick !== undefined || onButtonUp !== undefined || onButtonDown !== undefined) && 
                     <div className='icon-button' onClick={onButtonClick} onMouseDown={onButtonDown} onMouseUp={onButtonUp}>
                         {icon !== undefined && (
