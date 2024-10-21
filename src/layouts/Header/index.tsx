@@ -17,7 +17,7 @@ export default function Header() {
   const { pathname } = useLocation();
   
   //          state: Cookie State          //
-  const [cookie, setCookie] = useCookies();
+  const [cookies, setCookie] = useCookies();
   
   //          state: Login State          //
   const [isLogin, setLogin] = useState<boolean>(false);
@@ -89,6 +89,13 @@ export default function Header() {
       }
     },[searchWord]);
     
+    //          effect: Log In User Change Event           //
+    useEffect(() => {
+      setLogin(loginUser !== null);
+    },[loginUser])
+    
+    
+    
     if (!status)
     //          render: Search Button Rendering (false)         //
     return (
@@ -124,25 +131,24 @@ export default function Header() {
       navigate(USER_PATH(email));
     };
     
-    //          event handler: Mypage Button Click Event         //
+    //          event handler: Sign Out Button Click Event         //
     const onSignOutButtonClickHandler = () =>{
       resetLoginUser();
+      setCookie('accessToken', '', { path: MAIN_PATH(), expires: new Date() });
       navigate(MAIN_PATH());
     };
     
-    //          event handler: Login Button Click Event         //
+    //          event handler: Sign In Button Click Event         //
     const onSignInButtonClickHandler = () =>{
       navigate(AUTH_PATH());
     };
     
     if (isLogin && userEmail === loginUser?.email)
     //          render: Logout Button Component Rendering         //
-    return <div className='white-button' onClick={onMyPageButtonClickHandler}>{'로그아웃'}</div>;
-    
+    return <div className='white-button' onClick={onSignOutButtonClickHandler}>{'로그아웃'}</div>;
     if (isLogin) 
     //          render: Mypage Button Component Rendering         //
     return <div className='white-button' onClick={onMyPageButtonClickHandler}>{'MyPage'}</div>;
-     
     //          render: Login Button Component Rendering         //
     return <div className='black-button' onClick={onSignInButtonClickHandler}>{'로그인'}</div>;
   };
